@@ -1,0 +1,17 @@
+Abstract—IEEE 802.15.4 was developed to meet the needs for
+simple, low-power and low-cost wireless communication. In the
+past couple of years it has become a popular technology for
+wireless sensor networks. It operates primarily in the 2.4 GHz
+ISM band, which makes the technology easily applicable and
+worldwide available. However, IEEE 802.15.4 is potentially vulnerable
+to interference by other wireless technologies working in
+this band such as IEEE 802.11 and Bluetooth. This paper gives
+a short overview of the IEEE 802.15.4 and carefully analyzes
+the properties and performance of IEEE 802.15.4 through measurement
+of the RSSI, PER and run lengths distribution using
+real off-the-shelf hardware. Furthermore we present simulation
+results from the evaluation of the IEEE 802.15.4 MAC protocol.
+Finally, we address the coexistence between IEEE 802.11 and
+IEEE 802.15.4 and measure the impact these two wireless
+technologies have on each other when operating concurrently
+and in range.
