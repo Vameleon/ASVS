@@ -35,7 +35,8 @@ BLOCKS = 4096    #2^x
 
 print("Playing audio sample ")
 print("File-name: "+ WAVFILE)
-print("The number of samples is "+ str(NUM_CH))
+print ("Blocks at a time: " + str(BLOCKS))
+print("The number of channels: "+ str(NUM_CH))
 print("The sampling rate: " + str(SAMPLING_RATE) + " Hz")
 
 
