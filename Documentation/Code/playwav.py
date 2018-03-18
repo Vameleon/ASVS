@@ -82,9 +82,9 @@ def GET_LVLs(data, BLOCKS,SAMPLING_RATE):
    #FREQ_DOMAIN[7]= int(np.mean(AMP[piff(10000):piff(20000):1]))
 
    # Tidy up column values for the LED FREQ_DOMAIN
-   FREQ_DOMAIN=np.divide(np.multiply(FREQ_DOMAIN,weighting),1000000)
+   #FREQ_DOMAIN=np.divide(np.multiply(FREQ_DOMAIN,weighting),1000000)
    # Set floor at 0 and ceiling at 8 for LED FREQ_DOMAIN
-   FREQ_DOMAIN=FREQ_DOMAIN.clip(0,8)
+   #FREQ_DOMAIN=FREQ_DOMAIN.clip(0,8)
    return FREQ_DOMAIN
 
 
