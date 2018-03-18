@@ -1,0 +1,4 @@
+#Installing packages
+alsa-lib
+python2-tools
+cython
