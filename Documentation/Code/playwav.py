@@ -12,13 +12,20 @@ import wave
 from struct import unpack
 import numpy as np
 import os as OS
+import sys as SYS
 
 
 #VARs
-WAVFILE='toto-africa.wav'
 
+
+WAVFILE = str(SYS.argv[1])
+
+print("Input file:" + WAVFILE)
 SPECTRUM  = [1,1,1,3,3,3,2,2]
-FREQ_DOMAIN= [0,0,0,0,0,0,0,0]
+FREQ_DOMAIN = [0,0,0,0,0,0,0,0]
+weighting = [2,8,8,16,16,32,32,64] 
+FREQ_60Hz_LVL=0
+FREQ_LVL = ["' ________________'","' |_______________'","' ||______________'","' ||||____________'","' ||||||||________'","' ||||||||||||||||'"]
 AMP= []
 
 
@@ -55,7 +62,7 @@ ALSA_OUT.setperiodsize(BLOCKS)
 
 # Return AMP array index corresponding to a particular frequency
 def piff(val):
-   return int(2*BLOCKS*val/SAMPLING_RATE)
+   return int(2*BLOCKS*val/SAMPLING_RATE) #val = 1 --> (2*2048*1)/22050
    
 def GET_LVLs(data, BLOCKS,SAMPLING_RATE):
    global FREQ_DOMAIN
@@ -72,20 +79,23 @@ def GET_LVLs(data, BLOCKS,SAMPLING_RATE):
    
    
    # Find average 'amplitude' for specific frequency ranges in Hz
-   AMP = np.abs(FFT)   
-   FREQ_DOMAIN[0]= int(np.mean(AMP[piff(0)    :piff(100):1]))
+   AMP = np.abs(FFT)   #absolute
+   
+   FREQ_DOMAIN[0]= int(np.mean(    AMP[piff(0)    :piff(100):1])       )
    FREQ_DOMAIN[1]= int(np.mean(AMP[piff(100)  :piff(250):1]))
    FREQ_DOMAIN[2]= int(np.mean(AMP[piff(250)  :piff(500):1]))
    FREQ_DOMAIN[3]= int(np.mean(AMP[piff(500)  :piff(1000):1]))
    FREQ_DOMAIN[4]= int(np.mean(AMP[piff(1000) :piff(2300):1]))
    FREQ_DOMAIN[5]= int(np.mean(AMP[piff(2300) :piff(4500):1]))
    FREQ_DOMAIN[6]= int(np.mean(AMP[piff(4500) :piff(10000):1]))
-   #FREQ_DOMAIN[7]= int(np.mean(AMP[piff(10000):piff(20000):1]))
+   #FREQ_DOMAIN[7]= int(np.mean(AMP[piff(10000):piff(12000):1]))
+  
+   # Tidy up column values 
+   FREQ_DOMAIN=np.divide(np.multiply(FREQ_DOMAIN,weighting),1000000)
+   # Set floor at 0 and ceiling at 8 
+   FREQ_DOMAIN=(FREQ_DOMAIN.clip(0,8))
+   
 
-   # Tidy up column values for the LED FREQ_DOMAIN
-   #FREQ_DOMAIN=np.divide(np.multiply(FREQ_DOMAIN,weighting),1000000)
-   # Set floor at 0 and ceiling at 8 for LED FREQ_DOMAIN
-   #FREQ_DOMAIN=FREQ_DOMAIN.clip(0,8)
    return FREQ_DOMAIN
 
 
@@ -101,10 +111,29 @@ try:
     while data!='':
        ALSA_OUT.write(data)
        FREQ_DOMAIN=GET_LVLs(data, BLOCKS,SAMPLING_RATE)
-       OS.system("echo -en "+str(FREQ_DOMAIN) + "\r")  
+       #OS.system("echo -en "+str(FREQ_DOMAIN) + "\r")  
+       FREQ_DOMAIN = FREQ_DOMAIN.astype(int)
+       
+       if FREQ_DOMAIN[0] == 0:
+            FREQ_60Hz_LVL=FREQ_LVL[0]
+       elif FREQ_DOMAIN[0] <=1 and FREQ_DOMAIN[0] > 0:
+            FREQ_60Hz_LVL=FREQ_LVL[1]
+       elif FREQ_DOMAIN[0] <=2 and FREQ_DOMAIN[0] > 1:
+            FREQ_60Hz_LVL=FREQ_LVL[2]
+       elif FREQ_DOMAIN[0] <=3 and FREQ_DOMAIN[0] > 2:
+            FREQ_60Hz_LVL=FREQ_LVL[3]
+       elif FREQ_DOMAIN[0] <=4 and FREQ_DOMAIN[0] > 3:
+            FREQ_60Hz_LVL=FREQ_LVL[4]
+       elif FREQ_DOMAIN[0] <=5 and FREQ_DOMAIN[0] > 4:
+            FREQ_60Hz_LVL=FREQ_LVL[5]
+
+       OS.system("echo -en " + str(FREQ_DOMAIN) + str(FREQ_60Hz_LVL) + "\r")
+    
+       
+     
+    
+
        data = WAVSAMPLE.readframes(BLOCKS)
-
-
 
 
     WAVESAMPLE.close()
