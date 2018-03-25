@@ -1,7 +1,11 @@
-#Written by Tariq A.
-#Special thanks to https://www.rototron.info for inspiring me to use the numpy FFT
+# Written by Tariq A.
+# Thanks to https://www.rototron.info for inspiring me to use the numpy FFT
+# https://www.wavtones.com/functiongenerator.php allowed me to generate audio signals
+# https://www.audiocheck.net/audiofrequencysignalgenerator_sweep.php allowed me to generate audio signals
+# Additional wav files were found online and are put in Documentation/Impl.../Med../
 
-
+# Main purpose is visualizing the Human Audio Spectrum ~16 Hz - ~16 kHz
+# Current implementaion of this python program exits (when audio file reaches NULL) with a value error
 
 
 
@@ -15,51 +19,67 @@ import os as OS
 import sys as SYS
 
 
-#VARs
 
 
+
+
+#-------------------------------------------------------------------------
+# VARs
 WAVFILE = str(SYS.argv[1])
+print("\nMain purpose is visualizing the Human Audio Spectrum ~16 Hz - ~16 kHz")
+print("\n")
+print("Input file: " + WAVFILE)
 
-print("Input file:" + WAVFILE)
-SPECTRUM  = [1,1,1,3,3,3,2,2]
 FREQ_DOMAIN = [0,0,0,0,0,0,0,0]
 weighting = [2,8,8,16,16,32,32,64] 
-FREQ_60Hz_LVL=0
-FREQ_LVL = ["' ________________'","' |_______________'","' ||______________'","' ||||____________'","' ||||||||________'","' ||||||||||||||||'"]
+FREQ_LVL_CUR=[0,0,0,0,0,0,0]
+#FREQ_LVL_CUR_THRES=[0,0,0,0,0,0,0]     #Thresholding frequency levels in Real-time
+FREQ_LVL_REF = ["' ________________'","' |_______________'","' ||______________'","' ||||____________'","' ||||||||________'","' ||||||||||||||||'"]
+FREQ_DOMAIN_ROOF = 20           #Domain roof. FYI: floor is at 0
+FREQ_DOMAIN_NUM_RANGES = 7
 AMP= []
+# End of #VARs
+#-------------------------------------------------------------------------
 
 
 
-#End of #VARs
-
-
-#WAVSAMPLE
+#-------------------------------------------------------------------------
+# WAVSAMPLE
 # Audio setup
 WAVSAMPLE = wave.open(WAVFILE,'r')
 SAMPLING_RATE = WAVSAMPLE.getframerate()
 NUM_CH = WAVSAMPLE.getnchannels()
 BLOCKS = 4096    #2^x
 
-print("Playing audio sample ")
-print("File-name: "+ WAVFILE)
 print ("Blocks at a time: " + str(BLOCKS))
 print("The number of channels: "+ str(NUM_CH))
 print("The sampling rate: " + str(SAMPLING_RATE) + " Hz")
+print("\n")
+# End of #WAVSAMPLE
+#-------------------------------------------------------------------------
 
 
-#End of #WAVSAMPLE
 
 
-#ALSA
+
+#-------------------------------------------------------------------------
+# ALSA
 ALSA_OUT = alsa.PCM(alsa.PCM_PLAYBACK, alsa.PCM_NORMAL)
 ALSA_OUT.setchannels(NUM_CH)
 ALSA_OUT.setrate(SAMPLING_RATE)
 ALSA_OUT.setformat(alsa.PCM_FORMAT_S16_LE)
 ALSA_OUT.setperiodsize(BLOCKS)
-#End of #ALSA
+# End of #ALSA
+#-------------------------------------------------------------------------
 
 
 
+
+
+
+
+
+#-------------------------------------------------------------------------
 # Return AMP array index corresponding to a particular frequency
 def piff(val):
    return int(2*BLOCKS*val/SAMPLING_RATE) #val = 1 --> (2*2048*1)/22050
@@ -92,11 +112,12 @@ def GET_LVLs(data, BLOCKS,SAMPLING_RATE):
   
    # Tidy up column values 
    FREQ_DOMAIN=np.divide(np.multiply(FREQ_DOMAIN,weighting),1000000)
-   # Set floor at 0 and ceiling at 8 
-   FREQ_DOMAIN=(FREQ_DOMAIN.clip(0,8))
-   
+   # Set floor at 0 and ceiling at 20 
+   FREQ_DOMAIN=(FREQ_DOMAIN.clip(0,FREQ_DOMAIN_ROOF))
+   FREQ_DOMAIN = FREQ_DOMAIN.astype(int)        #convert Domain to int, floats is not interesting atm
 
    return FREQ_DOMAIN
+#-------------------------------------------------------------------------
 
 
 
@@ -104,30 +125,36 @@ def GET_LVLs(data, BLOCKS,SAMPLING_RATE):
 
 
 
-#WAVESAMPLE read
+#-------------------------------------------------------------------------
+# Read audio sample
 data = WAVSAMPLE.readframes(BLOCKS)
 
 try:
+    print("Intiating Main loop (Exit with Ctrl + C)")
+    print("\n\n")
+    # print lables: Frequency Level Vector.....f0 range, f1 range,....,etc
+    print("Freq. LVL Vect        f0R(Low)            f1R               f2R              f3R              f4R             f5R            f6R(HIGH)")
+    
+    # Main loop (Exit with Ctrl + C)
     while data!='':
        ALSA_OUT.write(data)
-       FREQ_DOMAIN=GET_LVLs(data, BLOCKS,SAMPLING_RATE)
-       #OS.system("echo -en "+str(FREQ_DOMAIN) + "\r")  
-       FREQ_DOMAIN = FREQ_DOMAIN.astype(int)
-       
-       if FREQ_DOMAIN[0] == 0:
-            FREQ_60Hz_LVL=FREQ_LVL[0]
-       elif FREQ_DOMAIN[0] <=1 and FREQ_DOMAIN[0] > 0:
-            FREQ_60Hz_LVL=FREQ_LVL[1]
-       elif FREQ_DOMAIN[0] <=2 and FREQ_DOMAIN[0] > 1:
-            FREQ_60Hz_LVL=FREQ_LVL[2]
-       elif FREQ_DOMAIN[0] <=3 and FREQ_DOMAIN[0] > 2:
-            FREQ_60Hz_LVL=FREQ_LVL[3]
-       elif FREQ_DOMAIN[0] <=4 and FREQ_DOMAIN[0] > 3:
-            FREQ_60Hz_LVL=FREQ_LVL[4]
-       elif FREQ_DOMAIN[0] <=5 and FREQ_DOMAIN[0] > 4:
-            FREQ_60Hz_LVL=FREQ_LVL[5]
+       FREQ_DOMAIN=GET_LVLs(data, BLOCKS,SAMPLING_RATE)     
 
-       OS.system("echo -en " + str(FREQ_DOMAIN) + str(FREQ_60Hz_LVL) + "\r")
+       for i in range (0,FREQ_DOMAIN_NUM_RANGES):
+            if FREQ_DOMAIN[i] == 0:
+                 FREQ_LVL_CUR[i]=FREQ_LVL_REF[0]
+            elif FREQ_DOMAIN[i] <=4 and FREQ_DOMAIN[i] > 0:
+                 FREQ_LVL_CUR[i]=FREQ_LVL_REF[1]
+            elif FREQ_DOMAIN[i] <=8 and FREQ_DOMAIN[i] > 4:
+                 FREQ_LVL_CUR[i]=FREQ_LVL_REF[2]
+            elif FREQ_DOMAIN[i] <=12 and FREQ_DOMAIN[i] > 8:
+                 FREQ_LVL_CUR[i]=FREQ_LVL_REF[3]
+            elif FREQ_DOMAIN[i] <=16 and FREQ_DOMAIN[i] > 12:
+                 FREQ_LVL_CUR[i]=FREQ_LVL_REF[4]
+            elif FREQ_DOMAIN[i] <=FREQ_DOMAIN_ROOF and FREQ_DOMAIN[i] > 16:
+                 FREQ_LVL_CUR[i]=FREQ_LVL_REF[5]
+
+       OS.system("echo -en " + str(FREQ_DOMAIN) + str(FREQ_LVL_CUR[0]) + str(FREQ_LVL_CUR[1]) + str(FREQ_LVL_CUR[2]) + str(FREQ_LVL_CUR[3]) +str(FREQ_LVL_CUR[4]) +str(FREQ_LVL_CUR[5]) +str(FREQ_LVL_CUR[6]) + "\r")
     
        
      
@@ -140,3 +167,6 @@ try:
 except KeyboardInterrupt:
     
     WAVSAMPLE.close()
+
+
+#-------------------------------------------------------------------------
