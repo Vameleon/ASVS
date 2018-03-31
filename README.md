@@ -14,7 +14,7 @@ Required packages (possibly some are not mentioned)
 
 
 
-Source code found in Documentation/Code/play.py
+Source code found in Documentation/Source/play.py
 
 
 
