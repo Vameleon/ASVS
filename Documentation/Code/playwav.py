@@ -11,15 +11,12 @@
 
 
 
-import alsaaudio as alsa
-import wave
+import alsaaudio as ALSA
+import wave as WAVE
 from struct import unpack
 import numpy as NP
 import os as OS
 import sys as SYS
-
-
-
 
 
 
@@ -46,7 +43,7 @@ AMP= []
 #-------------------------------------------------------------------------
 # WAVSAMPLE
 # Audio setup
-WAVSAMPLE = wave.open(WAVFILE,'r')
+WAVSAMPLE = WAVE.open(WAVFILE,'r')
 SAMPLING_RATE = WAVSAMPLE.getframerate()
 NUM_CH = WAVSAMPLE.getnchannels()
 BLOCKS = 4096    #2^x
@@ -64,10 +61,10 @@ print("\n")
 
 #-------------------------------------------------------------------------
 # ALSA
-ALSA_OUT = alsa.PCM(alsa.PCM_PLAYBACK, alsa.PCM_NORMAL)
+ALSA_OUT = ALSA.PCM(ALSA.PCM_PLAYBACK, ALSA.PCM_NORMAL)
 ALSA_OUT.setchannels(NUM_CH)
 ALSA_OUT.setrate(SAMPLING_RATE)
-ALSA_OUT.setformat(alsa.PCM_FORMAT_S16_LE)
+ALSA_OUT.setformat(ALSA.PCM_FORMAT_S16_LE)
 ALSA_OUT.setperiodsize(BLOCKS)
 # End of #ALSA
 #-------------------------------------------------------------------------
