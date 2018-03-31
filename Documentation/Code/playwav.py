@@ -14,7 +14,7 @@
 import alsaaudio as alsa
 import wave
 from struct import unpack
-import numpy as np
+import numpy as NP
 import os as OS
 import sys as SYS
 
@@ -30,13 +30,13 @@ print("\nMain purpose is visualizing the Human Audio Spectrum ~16 Hz - ~16 kHz")
 print("\n")
 print("Input file: " + WAVFILE)
 
-FREQ_DOMAIN = [0,0,0,0,0,0,0,0]
-weighting = [2,8,8,16,16,32,32,64] 
-FREQ_LVL_CUR=[0,0,0,0,0,0,0]
+FREQ_DOMAIN = [0,0,0,0,0,0,0,0,0,0]
+weighting = [2,2,8,8,16,16,32,32,64,64] 
+FREQ_LVL_CUR=[0,0,0,0,0,0,0,0,0,0]
 #FREQ_LVL_CUR_THRES=[0,0,0,0,0,0,0]     #Thresholding frequency levels in Real-time
-FREQ_LVL_REF = ["' ________________'","' |_______________'","' ||______________'","' ||||____________'","' ||||||||________'","' ||||||||||||||||'"]
-FREQ_DOMAIN_ROOF = 20           #Domain roof. FYI: floor is at 0
-FREQ_DOMAIN_NUM_RANGES = 7
+FREQ_LVL_REF = ["' ____________'","' |___________'","' ||__________'","' ||||________'","' ||||||||____'","' ||||||||||||'"]
+FREQ_DOMAIN_CEILING = 20           #Domain roof. FYI: floor is at 0
+FREQ_DOMAIN_NUM_RANGES = 10
 AMP= []
 # End of #VARs
 #-------------------------------------------------------------------------
@@ -81,39 +81,42 @@ ALSA_OUT.setperiodsize(BLOCKS)
 
 #-------------------------------------------------------------------------
 # Return AMP array index corresponding to a particular frequency
-def piff(val):
-   return int(2*BLOCKS*val/SAMPLING_RATE) #val = 1 --> (2*2048*1)/22050
+def piff(arG):
+   return int(2*BLOCKS*arG/SAMPLING_RATE) #arG = 1 --> (2*4096*1)/22050
    
 def GET_LVLs(data, BLOCKS,SAMPLING_RATE):
    global FREQ_DOMAIN
 
    # Convert raw data (ASCII string) to numpy array
    data = unpack("%dh"%(len(data)/2),data)
-   data = np.array(data, dtype='h')
+   data = NP.array(data, dtype='h')
 
    # Apply FFT - real data
-   FFT=np.fft.rfft(data)
+   FFT=NP.fft.rfft(data)
    # Remove last element in array to make it the same size as BLOCKS
-   FFT=np.delete(FFT,len(FFT)-1)
+   FFT=NP.delete(FFT,len(FFT)-1)
    
    
    
    # Find average 'amplitude' for specific frequency ranges in Hz
-   AMP = np.abs(FFT)   #absolute
+   AMP = NP.abs(FFT)   #absolute
    
-   FREQ_DOMAIN[0]= int(np.mean(    AMP[piff(0)    :piff(100):1])       )
-   FREQ_DOMAIN[1]= int(np.mean(AMP[piff(100)  :piff(250):1]))
-   FREQ_DOMAIN[2]= int(np.mean(AMP[piff(250)  :piff(500):1]))
-   FREQ_DOMAIN[3]= int(np.mean(AMP[piff(500)  :piff(1000):1]))
-   FREQ_DOMAIN[4]= int(np.mean(AMP[piff(1000) :piff(2300):1]))
-   FREQ_DOMAIN[5]= int(np.mean(AMP[piff(2300) :piff(4500):1]))
-   FREQ_DOMAIN[6]= int(np.mean(AMP[piff(4500) :piff(10000):1]))
-   #FREQ_DOMAIN[7]= int(np.mean(AMP[piff(10000):piff(12000):1]))
-  
+   FREQ_DOMAIN[0]= int(NP.mean(AMP[piff(0):piff(30):1]))                    # 0  
+   FREQ_DOMAIN[1]= int(NP.mean(AMP[piff(35)  :piff(100):1]))               # 40 -
+   FREQ_DOMAIN[2]= int(NP.mean(AMP[piff(150)  :piff(300):1]))              # 47 
+   FREQ_DOMAIN[3]= int(NP.mean(AMP[piff(320)  :piff(500):1]))              # 94 - 
+   FREQ_DOMAIN[4]= int(NP.mean(AMP[piff(600) :piff(1000):1]))              # 1
+   FREQ_DOMAIN[5]= int(NP.mean(AMP[piff(1100) :piff(2500):1]))             
+   FREQ_DOMAIN[6]= int(NP.mean(AMP[piff(3000) :piff(5000):1]))             
+   FREQ_DOMAIN[7]= int(NP.mean(AMP[piff(5000):piff(7000):1]))
+   FREQ_DOMAIN[8]= int(NP.mean(AMP[piff(7100):piff(10000):1]))
+   FREQ_DOMAIN[9]= int(NP.mean(AMP[piff(10100):piff(16000):1]))
+   
+   
    # Tidy up column values 
-   FREQ_DOMAIN=np.divide(np.multiply(FREQ_DOMAIN,weighting),1000000)
+   FREQ_DOMAIN=NP.divide(NP.multiply(FREQ_DOMAIN,weighting),1000000)
    # Set floor at 0 and ceiling at 20 
-   FREQ_DOMAIN=(FREQ_DOMAIN.clip(0,FREQ_DOMAIN_ROOF))
+   FREQ_DOMAIN=(FREQ_DOMAIN.clip(00,FREQ_DOMAIN_CEILING))
    FREQ_DOMAIN = FREQ_DOMAIN.astype(int)        #convert Domain to int, floats is not interesting atm
 
    return FREQ_DOMAIN
@@ -130,10 +133,11 @@ def GET_LVLs(data, BLOCKS,SAMPLING_RATE):
 data = WAVSAMPLE.readframes(BLOCKS)
 
 try:
-    print("Intiating Main loop (Exit with Ctrl + C)")
+    print("Initializing main loop (Exit with Ctrl + C)")
     print("\n\n")
     # print lables: Frequency Level Vector.....f0 range, f1 range,....,etc
-    print("Freq. LVL Vect        f0R(Low)            f1R               f2R              f3R              f4R             f5R            f6R(HIGH)")
+    print("                           0-30         30          150          320           600          1100         3k           5k           7.1k         10.1k")
+    print("Freq. LVL Vect             f0R          f1R         f2R          f3R           f4R          f5R          f6R          f7R          f8R          f9R")
     
     # Main loop (Exit with Ctrl + C)
     while data!='':
@@ -151,10 +155,10 @@ try:
                  FREQ_LVL_CUR[i]=FREQ_LVL_REF[3]
             elif FREQ_DOMAIN[i] <=16 and FREQ_DOMAIN[i] > 12:
                  FREQ_LVL_CUR[i]=FREQ_LVL_REF[4]
-            elif FREQ_DOMAIN[i] <=FREQ_DOMAIN_ROOF and FREQ_DOMAIN[i] > 16:
+            elif FREQ_DOMAIN[i] <=FREQ_DOMAIN_CEILING and FREQ_DOMAIN[i] > 16:
                  FREQ_LVL_CUR[i]=FREQ_LVL_REF[5]
 
-       OS.system("echo -en " + str(FREQ_DOMAIN) + str(FREQ_LVL_CUR[0]) + str(FREQ_LVL_CUR[1]) + str(FREQ_LVL_CUR[2]) + str(FREQ_LVL_CUR[3]) +str(FREQ_LVL_CUR[4]) +str(FREQ_LVL_CUR[5]) +str(FREQ_LVL_CUR[6]) + "\r")
+       OS.system("echo -en " + str(FREQ_DOMAIN) + str(FREQ_LVL_CUR[0]) + str(FREQ_LVL_CUR[1]) + str(FREQ_LVL_CUR[2]) + str(FREQ_LVL_CUR[3]) +str(FREQ_LVL_CUR[4]) +str(FREQ_LVL_CUR[5]) +str(FREQ_LVL_CUR[6]) + str(FREQ_LVL_CUR[7]) + str(FREQ_LVL_CUR[8])+ str(FREQ_LVL_CUR[9]) + "\r")
     
        
      
