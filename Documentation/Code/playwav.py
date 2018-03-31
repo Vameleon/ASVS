@@ -19,7 +19,7 @@ import numpy as NP
 import os as OS
 import sys as SYS
 from cli_visualizer import cli_visualize as CLIV
-
+from time import sleep
 
 
 #-------------------------------------------------------------------------
@@ -28,12 +28,12 @@ WAVFILE = str(SYS.argv[1])
 print("\nMain purpose is visualizing the Human Audio Spectrum ~16 Hz - ~16 kHz")
 print("\n")
 print("Input file: " + WAVFILE)
-
+SLP_DURA = 4            # 3 secs delay before starting
 FREQ_DOMAIN = [0,0,0,0,0,0,0,0,0,0]
 weighting = [2,2,8,8,16,16,32,32,64,64] 
-FREQ_LVL_CUR=[0,0,0,0,0,0,0,0,0,0]
+
 #FREQ_LVL_CUR_THRES=[0,0,0,0,0,0,0]     #Thresholding frequency levels in Real-time
-FREQ_LVL_REF = ["' ____________'","' |___________'","' ||__________'","' ||||________'","' ||||||||____'","' ||||||||||||'"]
+
 FREQ_DOMAIN_CEILING = 20           #Domain roof. FYI: floor is at 0
 FREQ_DOMAIN_NUM_RANGES = 10
 AMP= []
@@ -132,8 +132,8 @@ def GET_LVLs(data, BLOCKS,SAMPLING_RATE):
 data = WAVSAMPLE.readframes(BLOCKS)
 
 try:
-    print("Initializing main loop (Exit with Ctrl + C)")
-    print("\n\n")
+    print("Initializing main loop (Exit with Ctrl + C)......")
+    sleep(SLP_DURA)
 
     
     # Main loop (Exit with Ctrl + C)

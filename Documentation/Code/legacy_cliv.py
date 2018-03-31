@@ -1,3 +1,5 @@
+FREQ_LVL_REF = ["' ____________'","' |___________'","' ||__________'","' ||||________'","' ||||||||____'","' ||||||||||||'"]
+FREQ_LVL_CUR=[0,0,0,0,0,0,0,0,0,0]
 # print lables: Frequency Level Vector.....f0 range, f1 range,....,etc
 print("                           0-30         30          150          320           600          1100         3k           5k           7.1k         10.1k")
 print("Freq. LVL Vect             f0R          f1R         f2R          f3R           f4R          f5R          f6R          f7R          f8R          f9R")
