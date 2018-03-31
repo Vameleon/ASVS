@@ -14,13 +14,13 @@ Required packages (possibly some are not mentioned)
 
 
 
-Source code found in Documentation/Code/playwav.py
+Source code found in Documentation/Code/play.py
 
 
 
 Current Usage:
 
-$ python playwav.py    AUDIO_FILE_PATH_HERE
+$ python play.py    AUDIO_FILE_PATH_HERE
 
 -Notice that only ".wav" files can be played
 -Also due to UI inexperience, the CLI window will be to be adjusted to the size of the 
