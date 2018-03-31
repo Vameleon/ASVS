@@ -3,6 +3,7 @@
 # Thanks to https://www.rototron.info for inspiring me to use the numpy FFT
 # https://www.wavtones.com/functiongenerator.php allowed me to generate audio signals
 # https://www.audiocheck.net/audiofrequencysignalgenerator_sweep.php allowed me to generate audio signals
+# http://www.orangefreesounds.com   allowed to test lounge music and melodic upbeats
 # Additional wav files were found online and are put in Documentation/Impl.../Med../
 
 # Main purpose is visualizing the Human Audio Spectrum ~16 Hz - ~16 kHz

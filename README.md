@@ -15,7 +15,7 @@ Required packages (possibly some are not mentioned)
 
 
 Source code found in Documentation/Source/play.py
-
+Sample wav files are found in Documentation/Implementation/Media/
 
 
 Current Usage:
