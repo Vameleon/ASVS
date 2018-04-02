@@ -10,9 +10,7 @@
 # Current implementaion of this python program exits (when audio file reaches NULL) with a value error
 
 
-
-
-
+from multiprocessing import PROCESS
 import alsaaudio as ALSA
 import wave as WAVE
 from struct import unpack
@@ -20,6 +18,7 @@ import numpy as NP
 import os as OS
 import sys as SYS
 from cli_visualizer import cli_visualize as CLIV
+from visualizer import visualize as VIZE
 from time import sleep
 
 
@@ -29,11 +28,11 @@ WAVFILE = str(SYS.argv[1])
 print("\nMain purpose is visualizing the Human Audio Spectrum ~16 Hz - ~16 kHz")
 print("\n")
 print("Input file: " + WAVFILE)
-SLP_DURA = 4            # 3 secs delay before starting
+SLP_DURA = 2            # 3 secs delay before starting
 FREQ_DOMAIN = [0,0,0,0,0,0,0,0,0,0]
 weighting = [2,2,8,8,16,16,32,32,64,64] 
 
-#FREQ_LVL_CUR_THRES=[0,0,0,0,0,0,0]     #Thresholding frequency levels in Real-time
+FREQ_LVL_CUR_THRES=[15,12,0,0,0,0,0,0,0,0]     #Thresholding frequency levels in Real-time
 
 FREQ_DOMAIN_CEILING = 20           #Domain roof. FYI: floor is at 0
 FREQ_DOMAIN_NUM_RANGES = 10
@@ -139,9 +138,16 @@ try:
     
     # Main loop (Exit with Ctrl + C)
     while data!='':
-       ALSA_OUT.write(data)     # Output the original file
+       ALSA_OUT.write(data)                                 # Output the original file
        FREQ_DOMAIN=GET_LVLs(data, BLOCKS,SAMPLING_RATE)     # Calculate FFT of the current data-block     
-       CLIV(FREQ_DOMAIN)                                   # Visualize the current Frequency Domain on CLI
+       CLIV(FREQ_DOMAIN)                                    # Visualize the current Frequency Domain on CLI
+       if FREQ_DOMAIN[1] >= FREQ_LVL_CUR_THRES[1]:          # Threshold f1
+           
+           
+           if __name__ == '__main__':
+               VIZEProc = PROCESS(target=VIZE, args=(18,))  # Send signal to GPIO         
+               VIZEProc.start()
+
        data = WAVSAMPLE.readframes(BLOCKS)                  # Read the next data-block
 
 
