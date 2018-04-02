@@ -9,9 +9,10 @@ Required packages (possibly some are not mentioned)
 -python wave
 -python struct
 -python numpy
+-python setuptools
 -alsa-lib
 -alsa-utils
-
+-gcc
 
 
 Source code found in Documentation/Source/play.py
