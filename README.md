@@ -11,8 +11,12 @@ Required packages (possibly some are not mentioned)
 -python numpy
 -python setuptools
 -alsa-lib
+-alsa-tools
 -alsa-utils
+-ffmpeg
 -gcc
+-Python RPIO
+
 
 
 Source code found in Documentation/Source/play.py
