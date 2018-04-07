@@ -8,8 +8,12 @@
 import RPi.GPIO as gpio
 from time import sleep
 import sys as SYS
-  
+from led_pixel_controller import PaintPixel
 
+high_max = 100
+high_min = 0
+low_min = 0  
+low_max = 20
   
            # start duty cycle 0 (off)  
 
@@ -19,23 +23,61 @@ DutyCycleMin = 0                # lowest duty cycle
 DutyCycleIncrement = 1          # Increment per loop
 DutyCycleDecrement = 1 * -1     # decrement per loop
 
+def Convert_Range (arg):
+    
+    arg= int(arg)
 
-def visualize(arg):             # Initialize by pin number (arg)
-    gpio.setmode(gpio.BCM)      # choose BCM  
-    gpio.setup(arg, gpio.OUT)   # set gpio as output   
-    LED = gpio.PWM(arg, 100)    # create object at 100 Hertz  
-    LED.start(0)   
-#try:  
-    #while True:  
-    #for i in range(DutyCycleMin,DutyCycleMax+1,DutyCycleIncrement):      # +1  
-    #    LED.ChangeDutyCycle(i)  
-    #    sleep(Period)  
-    for i in range(DutyCycleMax,DutyCycleMin-1,DutyCycleDecrement):      # from 100 to zero in steps of -1  
-        LED.ChangeDutyCycle(i)  
-        sleep(Period)  
-#except KeyboardInterrupt:  
-    LED.stop()                  # stop the LED PWM output  
-    gpio.cleanup()              # clean up gpio on CTRL+C exit  
+    out = ( (arg - low_min) / (low_max - low_min) ) * (high_max - high_min) + high_min
+
+    return int(out)
 
 
-#visualize(int(SYS.argv[1]))    # debug
+def FrequencyToColor(FreqPixel):
+
+    GRB_Lvls = [0,0,0]
+
+    if FreqPixel == 0:          #f0
+        GRB_Lvls = [0,0,255] 
+        return GRB_Lvls
+    elif FreqPixel == 1:        #f1
+        GRB_Lvls = [0,0,255]
+        return GRB_Lvls    
+    elif FreqPixel == 2:        #f2
+        GRB_Lvls = [0,255,0]
+        return GRB_Lvls    
+    elif FreqPixel == 3:        #f3
+        GRB_Lvls = [0,255,0]
+        return GRB_Lvls    
+    elif FreqPixel == 4:        #f4
+        GRB_Lvls = [0,255,0]
+        return GRB_Lvls    
+    elif FreqPixel == 5:        #f5
+        GRB_Lvls = [0,255,0]
+        return GRB_Lvls    
+    elif FreqPixel == 6:        #f6
+        GRB_Lvls = [255,0,0]
+        return GRB_Lvls    
+    elif FreqPixel == 7:        #f7
+        GRB_Lvls = [255,0,0]
+        return GRB_Lvls    
+    elif FreqPixel == 8:        #f8
+        GRB_Lvls = [255,0,255]
+        return GRB_Lvls    
+    elif FreqPixel == 9:        #f9
+        GRB_Lvls = [255,0,255]
+        return GRB_Lvls
+        
+    else:
+        return GRB_Lvls
+        
+def visualize(FreqPXL,FreqLvl):             # Initialize by pin number (arg)
+
+   
+    
+    FreqLvl = Convert_Range(FreqLvl)
+    PaintPixel(int(FreqPXL),FrequencyToColor(int(FreqPXL)),int(FreqLvl))
+
+
+
+
+visualize(SYS.argv[1],SYS.argv[2])    # debug

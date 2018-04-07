@@ -26,7 +26,7 @@ LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
 LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
 LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
-
+OUTPUT_DELAY   = 5
 
 
 # Define functions which animate LEDs in various ways.
@@ -67,57 +67,31 @@ def rainbow(strip, wait_ms=20, iterations=1):
         strip.show()
         time.sleep(wait_ms/1000.0)
 
-def rainbowCycle(strip, wait_ms=20, iterations=5):
-    """Draw rainbow that uniformly distributes itself across all pixels."""
-    for j in range(256*iterations):
-        for i in range(strip.numPixels()):
-            strip.setPixelColor(i, wheel((int(i * 256 / strip.numPixels()) + j) & 255))
-        strip.show()
-        time.sleep(wait_ms/1000.0)
 
-def theaterChaseRainbow(strip, wait_ms=50):
-    """Rainbow movie theater light style chaser animation."""
-    for j in range(256):
-        for q in range(3):
-            for i in range(0, strip.numPixels(), 3):
-                strip.setPixelColor(i+q, wheel((i+j) % 255))
-            strip.show()
-            time.sleep(wait_ms/1000.0)
-            for i in range(0, strip.numPixels(), 3):
-                strip.setPixelColor(i+q, 0)
 
-# Main program logic follows:
-if __name__ == '__main__':
-    # Process arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--clear', action='store_true', help='clear the display on exit')
-    args = parser.parse_args()
+# Conver power level to brightness level in GRB
+# Power level should be in range 0-100 %
+def AbsPowerToBrightness (power_lvl,input_vector):
+    output_vector = [0,0,0]
+    output_vector[0] = int(input_vector[0]*((power_lvl)/100))  # R
+    output_vector[1] = int(input_vector[1]*((power_lvl)/100))  # G
+    output_vector[2] = int(input_vector[2]*((power_lvl)/100))  # B
+    # print (output_vector)
+    return output_vector
 
+# Frequency Index (Pixel nr,), Color GRB vector and power percentage
+def PaintPixel (FreqIdx,FreqColor,PowerPer):
+    
     # Create NeoPixel object with appropriate configuration.
     strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
-    # Intialize the library (must be called once before other functions).
+    # Intialize the library (must be called1 once before other functions).
     strip.begin()
+    #colorWipe(strip, Color(0,0,0), 10) # wipe
+    LVLVector = AbsPowerToBrightness(PowerPer,[FreqColor[0],FreqColor[1],FreqColor[2]]) 
+    strip.setPixelColor(FreqIdx,Color(LVLVector[0],LVLVector[1],LVLVector[2]))
+    strip.show()
+    # time.sleep(OUTPUT_DELAY/1000.0)
 
-    print ('Press Ctrl-C to quit.')
-    if not args.clear:
-        print('Use "-c" argument to clear LEDs on exit')
 
-    try:
 
-        while True:
-            print ('Color wipe animations.')
-            colorWipe(strip, Color(255, 0, 0))  # Red wipe
-            colorWipe(strip, Color(0, 255, 0))  # Blue wipe
-            colorWipe(strip, Color(0, 0, 255))  # Green wipe
-            #print ('Theater chase animations.')
-            #theaterChase(strip, Color(127, 127, 127))  # White theater chase
-            #theaterChase(strip, Color(127,   0,   0))  # Red theater chase
-            #theaterChase(strip, Color(  0,   0, 127))  # Blue theater chase
-            #print ('Rainbow animations.')
-            #rainbow(strip)
-            #rainbowCycle(strip)
-            #theaterChaseRainbow(strip)
 
-    except KeyboardInterrupt:
-        if args.clear:
-            colorWipe(strip, Color(0,0,0), 10)
