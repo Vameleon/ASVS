@@ -15,6 +15,9 @@ Required packages (possibly some are not mentioned)
 -alsa-utils
 -ffmpeg
 -gcc
+-make
+-scons
+-swig
 -Python RPIO
 
 
