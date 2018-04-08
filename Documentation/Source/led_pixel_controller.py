@@ -79,13 +79,21 @@ def AbsPowerToBrightness (power_lvl,input_vector):
     # print (output_vector)
     return output_vector
 
+
+def InitPixels():
+    # Create NeoPixel object with appropriate configuration.
+    global strip
+    strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
+    # Intialize the library (must be called1 once before other functions).
+    strip.begin()
+    print("Initialized Pixels")
 # Frequency Index (Pixel nr,), Color GRB vector and power percentage
 def PaintPixel (FreqIdx,FreqColor,PowerPer):
     
     # Create NeoPixel object with appropriate configuration.
-    strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
+    # strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
     # Intialize the library (must be called1 once before other functions).
-    strip.begin()
+    # strip.begin()
     #colorWipe(strip, Color(0,0,0), 10) # wipe
     LVLVector = AbsPowerToBrightness(PowerPer,[FreqColor[0],FreqColor[1],FreqColor[2]]) 
     strip.setPixelColor(FreqIdx,Color(LVLVector[0],LVLVector[1],LVLVector[2]))

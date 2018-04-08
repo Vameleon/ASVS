@@ -9,6 +9,11 @@ import RPi.GPIO as gpio
 from time import sleep
 import sys as SYS
 from led_pixel_controller import PaintPixel
+from led_pixel_controller import InitPixels
+import re
+import random
+
+FREQ_DOMAIN_NUM_RANGES = 10
 
 high_max = 100
 high_min = 0
@@ -17,11 +22,8 @@ low_max = 20
   
            # start duty cycle 0 (off)  
 
-Period = 0.015
-DutyCycleMax = 30               # high duty cycle
-DutyCycleMin = 0                # lowest duty cycle
-DutyCycleIncrement = 1          # Increment per loop
-DutyCycleDecrement = 1 * -1     # decrement per loop
+Period = 0.05 # File reading period
+
 
 def Convert_Range (arg):
     
@@ -79,5 +81,27 @@ def visualize(FreqPXL,FreqLvl):             # Initialize by pin number (arg)
 
 
 
+InitPixels()
 
-visualize(SYS.argv[1],SYS.argv[2])    # debug
+
+
+    # Simple socket implementation (not recommended)
+while True:
+    try:
+
+        # Get Frequency level from "fake" socket file
+        with open('socket') as socket:
+            FreqLvls = socket.read().split(',')
+        print (FreqLvls)
+
+        #visualizer frequencies
+        for j in range (FREQ_DOMAIN_NUM_RANGES):
+            
+            visualize(int(j),int(FreqLvls[j])) # Enable to work with play.py
+            
+
+        sleep(Period)
+        #visualize(int(CMD[0]),int(CMD[1]))    # debug
+
+    except ValueError:
+        continue

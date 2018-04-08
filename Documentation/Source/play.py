@@ -10,7 +10,7 @@
 # Current implementaion of this python program exits (when audio file reaches NULL) with a value error
 
 
-from multiprocessing import PROCESS
+#from multiprocessing import PROCESS
 import alsaaudio as ALSA
 import wave as WAVE
 from struct import unpack
@@ -18,7 +18,6 @@ import numpy as NP
 import os as OS
 import sys as SYS
 from cli_visualizer import cli_visualize as CLIV
-from visualizer import visualize as VIZE
 from time import sleep
 
 
@@ -62,12 +61,12 @@ print("\n")
 
 
 #-------------------------------------------------------------------------
-# ALSA
-ALSA_OUT = ALSA.PCM(ALSA.PCM_PLAYBACK, ALSA.PCM_NORMAL)
-ALSA_OUT.setchannels(NUM_CH)
-ALSA_OUT.setrate(SAMPLING_RATE)
-ALSA_OUT.setformat(ALSA.PCM_FORMAT_S16_LE)
-ALSA_OUT.setperiodsize(BLOCKS)
+# ALSA (Enable to output audio)
+# ALSA_OUT = ALSA.PCM(ALSA.PCM_PLAYBACK, ALSA.PCM_NORMAL)
+# ALSA_OUT.setchannels(NUM_CH)
+# ALSA_OUT.setrate(SAMPLING_RATE)
+# ALSA_OUT.setformat(ALSA.PCM_FORMAT_S16_LE)
+# ALSA_OUT.setperiodsize(BLOCKS)
 # End of #ALSA
 #-------------------------------------------------------------------------
 
@@ -138,16 +137,22 @@ try:
     
     # Main loop (Exit with Ctrl + C)
     while data!='':
-       ALSA_OUT.write(data)                                 # Output the original file
+       # ALSA (Enable to output audio)
+       # ALSA_OUT.write(data)                                 # Output the original file
+       
+       
        FREQ_DOMAIN=GET_LVLs(data, BLOCKS,SAMPLING_RATE)     # Calculate FFT of the current data-block     
        CLIV(FREQ_DOMAIN)                                    # Visualize the current Frequency Domain on CLI
-       if FREQ_DOMAIN[1] >= FREQ_LVL_CUR_THRES[1]:          # Threshold f1
-           
-           
-           if __name__ == '__main__':
-               VIZEProc = PROCESS(target=VIZE, args=(18,))  # Send signal to GPIO         
-               VIZEProc.start()
-
+       
+       
+       CMD = 'echo -en %d,%d,%d,%d,%d,%d,%d,%d,%d,%d > socket' %(FREQ_DOMAIN[0],FREQ_DOMAIN[1],FREQ_DOMAIN[2],FREQ_DOMAIN[3],FREQ_DOMAIN[4],FREQ_DOMAIN[5],FREQ_DOMAIN[6],FREQ_DOMAIN[7],FREQ_DOMAIN[8],FREQ_DOMAIN[9])
+       #print(SocketBuffer)
+       OS.system(CMD)
+       # if FREQ_DOMAIN[1] >= FREQ_LVL_CUR_THRES[1]:          # Thresholding
+        #   if __name__ == '__main__':
+        #       VIZEProc = PROCESS(target=VIZE, args=(18,))  # Send signal to GPIO         
+        #       VIZEProc.start()
+     
        data = WAVSAMPLE.readframes(BLOCKS)                  # Read the next data-block
 
 
